@@ -1,49 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity, TouchableHighlight, TouchableWithoutFeedback } from 'react-native';
-import { createStackNavigator, createAppContainer, StackActions, NavigationActions } from 'react-navigation';
-import { Audio } from 'expo';
-import { connect } from 'react-redux';
-import { toggleAudioStatus } from '../actions.js';
-
-
-let soundObject;
-
-async function fetchAndPlayAudio() {
-  try {
-    Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      allowsRecordingIOS: false,
-      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DUCK_OTHERS,
-      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DUCK_OTHERS,
-      playThroughEarpieceAndroid: false,
-      shouldDuckAndroid: true
-    });
-  } catch (error) {
-    alert(error);
-  }
-  
-  soundObject = new Audio.Sound();
-  
-  try {
-    await soundObject.loadAsync(require('../assets/sounds/early_morning_fog.mp3'));
-    await soundObject.playAsync();
-    this.props.dispatch(toggleAudioStatus());
-  } catch (error) {
-    alert(error);
-  }
-}
-
-async function stopAudio() {
-  if (soundObject !== undefined) {
-    try {
-      soundObject.stopAsync();
-      this.props.dispatch(toggleAudioStatus());
-    } catch (error) {
-      alert(error);
-    }
-  }
-}
-
+import { StackActions, NavigationActions } from 'react-navigation';
 
 export class HomeScreen extends React.Component {
   render() {
@@ -231,24 +188,4 @@ const styles = StyleSheet.create({
   },
 });
 
-// const AppNavigator = createStackNavigator({
-//   Home: {
-//     screen: App,
-//   },
-//   CalendarDay: {
-//     screen: CalendarDay,
-//   },
-// }, {
-//     initialRouteName: 'CalendarDay',
-//     headerMode: 'none'
-// });
-
-const mapStateToProps = state => ({
-  audioPlaying: state.audioPlaying
-});
-
-// const HomeScreen = connect(mapStateToProps)(createAppContainer(AppNavigator));
-
-// export default createAppContainer(AppNavigator);
-
-export default connect(mapStateToProps)(HomeScreen);
+export default HomeScreen;
