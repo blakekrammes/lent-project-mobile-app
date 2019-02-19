@@ -13,21 +13,29 @@ export default class CalendarDayScreen extends React.Component {
       audioPaused: false,
       playbackInstance: null,
       playbackInstancePosition: 0,
-      playbackInstanceDuration: 0
+      playbackInstanceDuration: null,
+      isSeeking: false,
+      shouldPlay: false,
+      isPlaying: false,
+      shouldPlayAtEndOfSeek: false,
     };
   }
 
   _onPlaybackStatusUpdate(status) {
-    // alert(this.state.playbackInstancePosition)
+    // alert(this.state.shouldPlay)
     if (status.isLoaded) {
       this.setState({
         playbackInstancePosition: status.positionMillis,
-        playbackInstanceDuration: status.durationMillis
+        playbackInstanceDuration: status.durationMillis,
+        shouldPlay: status.shouldPlay,
+        isPlaying: status.isPlaying
       });
       if (status.didJustFinish) {
+        // alert('finished')
         this.setState({
           playbackInstancePosition: 0,
-          playbackInstanceDuration: 0
+          isPlaying: false,
+          audioPlaying: false
         });
       }
     } else {
@@ -38,12 +46,43 @@ export default class CalendarDayScreen extends React.Component {
   }
 
   _getSeekSliderPosition() {
-    if (this.state.playbackInstance !== null && 
-        this.state.playbackInstancePosition !== null && 
-        this.state.playbackInstanceDuration !== null) {
+    if (this.state.playbackInstancePosition !== null 
+          && this.state.playbackInstanceDuration !== null
+          && this.state.isPlaying !== false) {
+          // alert(this.state.playbackInstancePosition / this.state.playbackInstanceDuration)
           return (this.state.playbackInstancePosition / this.state.playbackInstanceDuration);  
+    } else {
+      return 0;
     }
-    return 0;
+  }
+
+  _onSeekSliderValueChange(value) {
+    if (this.state.playbackInstance !== null && !this.state.isSeeking) {
+      this.isSeeking = true;
+      // this.state.shouldPlayAtEndOfSeek = this.state.shouldPlay;
+      this.state.playbackInstance.pauseAsync();
+    }
+  }
+
+  async _onSeekSliderSlidingComplete(value) {
+    if (this.state.playbackInstance !== null) {
+      this.state.isSeeking = false;
+      const seekPosition = value * this.state.playbackInstanceDuration;
+      if (this.state.audioPlaying) {
+        try {
+          await this.state.playbackInstance.playFromPositionAsync(seekPosition);
+          // await this.state.playbackInstance.playAsync();
+        } catch (error) {
+          alert(error);
+        }
+      } else {
+          try {
+            await this.state.playbackInstance.setPositionAsync(seekPosition);
+          } catch (error) {
+              alert(error);
+          }
+      }
+    }
   }
 
   async playAndPauseAudio() {
@@ -98,7 +137,9 @@ export default class CalendarDayScreen extends React.Component {
       try {
         await this.state.playbackInstance.stopAsync();
         this.setState({
-          audioPlaying: false
+          audioPlaying: false,
+          // move it back to the beginning
+          playbackInstancePosition: 0
         });
       } catch (error) {
         alert(error);
@@ -151,7 +192,10 @@ export default class CalendarDayScreen extends React.Component {
               <Image source={require('../img/icons/stop.png')} 
                       style={{width: 25, height: 25, marginRight: 10, marginLeft: 10}}></Image>
             </TouchableOpacity>
-            <Slider style={{width: 130, height: 20, marginLeft: 10 }} />
+            <Slider style={{width: 130, height: 20, marginLeft: 10 }} 
+                    value={this._getSeekSliderPosition()} 
+                    onValueChange={this._onSeekSliderValueChange.bind(this)} 
+                    onSlidingComplete={this._onSeekSliderSlidingComplete.bind(this)} />
           </View>
       </View>
     );
