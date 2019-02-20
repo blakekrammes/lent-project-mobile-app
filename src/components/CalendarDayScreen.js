@@ -9,8 +9,6 @@ export default class CalendarDayScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      audioPlaying: false,
-      audioPaused: false,
       playbackInstance: null,
       playbackInstancePosition: null,
       playbackInstanceDuration: null,
@@ -18,7 +16,9 @@ export default class CalendarDayScreen extends React.Component {
       shouldPlay: false,
       isPlaying: false,
       shouldPlayAtEndOfSeek: false,
-      // playbackStatusIsUpdating: false
+      reachedEnd: false,
+      playbackStatusIsUpdating: false,
+      sliderTouched: false
     };
   }
 
@@ -34,7 +34,7 @@ export default class CalendarDayScreen extends React.Component {
         this.setState({
           playbackInstancePosition: 0,
           isPlaying: false,
-          audioPlaying: false
+          reachedEnd: true
         });
       }
     } else {
@@ -44,16 +44,13 @@ export default class CalendarDayScreen extends React.Component {
     }
   }
 
-  _getSeekSliderPosition() {
+  _getSeekSliderPosition(value) {
     // return if the audio is playing while the user is moving the slider
-    if (this.state.audioPlaying) {
+    if (this.state.isPlaying && this.state.sliderTouched) {
       return;
     } else if (this.state.playbackInstancePosition !== null 
-            && this.state.playbackInstanceDuration !== null
-            && this.state.isPlaying !== false) {
+            && this.state.playbackInstanceDuration !== null) {
       return (this.state.playbackInstancePosition / this.state.playbackInstanceDuration);  
-    } else if (!this.state.audioPlaying) { 
-        return (this.state.playbackInstancePosition / this.state.playbackInstanceDuration); 
     } else {
         return 0;
     }
@@ -68,48 +65,37 @@ export default class CalendarDayScreen extends React.Component {
   // }
 
   async _onSeekSliderSlidingComplete(value) {
+    console.log(value)
     let seekPosition;
-    seekPosition = value * this.state.playbackInstanceDuration;
     // if it's repeated and playing
-    if (this.state.playbackInstance !== null && this.state.audioPlaying) {
-      this.state.isSeeking = false;
+    if (this.state.playbackInstance !== null && this.state.isPlaying) {
+      // this.state.isSeeking = false;
       try {
         await this.state.playbackInstance.playFromPositionAsync(seekPosition);
         // await this.state.playbackInstance.playAsync();
       } catch (error) {
         alert(error);
-      }
-    } else if (!this.state.audioPlaying && this.state.audioPaused) { // if it's not playing
-        try { // set it at the new position without playing it
+      } // if it's not playing set it at the new position without playing it
+    } else if (!this.state.isPlaying) { 
+        try {
+          // if it's null, you don't need to worry about loading and adding the playbackStatusUpdate callback here
+          if (this.state.playbackInstance === null) {
+            await this.setState({
+              playbackInstance: new Audio.Sound()
+            });
+            // await this.state.playbackInstance.setStatusAsync(50);
+            await this.state.playbackInstance.loadAsync(require('../assets/sounds/early_morning_fog.mp3'));
+            await this.state.playbackInstance.setOnPlaybackStatusUpdate(this._onPlaybackStatusUpdate.bind(this));
+          }
+          await this.setState({ playbackInstancePosition: value });
+          console.log(this.state.playbackInstancePosition)
+          seekPosition = value * this.state.playbackInstanceDuration;
           await this.state.playbackInstance.setPositionAsync(seekPosition);
+          // console.log(this.state.playbackInstancePosition, this.state.playbackInstanceDuration)
         } catch (error) {
             alert(error);
-        }
-    } else {
-      try {
-        if (!this.state.audioPlaying) {
-          this.state.isSeeking = false;
-          await this.setState({
-            playbackInstance: new Audio.Sound()
-          });
-          if (!this.state.playbackStatusIsUpdating) {
-            // await this.state.playbackInstance.setStatusAsync(50);
-            await this.state.playbackInstance.setOnPlaybackStatusUpdate(this._onPlaybackStatusUpdate.bind(this));
-            this.state.playbackStatusIsUpdating = true;
           }
-          await this.state.playbackInstance.loadAsync(require('../assets/sounds/early_morning_fog.mp3'));
-        }
-        seekPosition = value * this.state.playbackInstanceDuration;
-        console.log(seekPosition)
-        this.setState({
-          playbackInstancePosition: value,
-          playbackInstanceDuration: this.state.playbackInstanceDuration
-        });
-        await this.state.playbackInstance.setPositionAsync(seekPosition);
-      } catch (error) {
-          alert(error);
       }
-    }
   }
 
   async playAndPauseAudio() {
@@ -126,41 +112,40 @@ export default class CalendarDayScreen extends React.Component {
       alert(error);
     }
     
-    try { // if it's paused
-      if (this.state.audioPlaying === false) {
+    try { // if state is initial or paused
+      if (this.state.isPlaying === false) {
         // for multiple audio files on diff days, you may need to unload first
         // if it's a repeat of track
+        console.log(this.state.playbackInstancePosition)
         if (this.state.playbackInstance !== null) {
-          if (this.state.playbackInstancePosition === 0) {
-            alert('hi')
-            await this.state.playbackInstance.replayAsync();
+          if (this.state.reachedEnd) {
+            await this.state.playbackInstance.replayAsync(); // check if it has been set without playing it yet
+            this.setState({ reachedEnd: false });
+          } else if (this.state.playbackInstancePosition !== 0) {
+            console.log('here')
+            await this.state.playbackInstance.playFromPositionAsync(this.state.playbackInstancePosition / this.state.playbackInstanceDuration);
+          } else {
+            console.log('paused but play again')
+            await this.state.playbackInstance.playAsync();
+            this.setState({
+              isPlaying: true
+            });
           }
-          await this.state.playbackInstance.playAsync();
-          this.setState({
-            audioPlaying: true,
-            audioPaused: false,
-            isPlaying: true
-          });
         } else {
-          await this.setState({
-            audioPlaying: true,
-            isPlaying: true,
-            playbackInstance: new Audio.Sound(),
-            audioPaused: false
-          });
-          if (this.state.playbackInstancePosition === null) {
-            await this.state.playbackInstance.loadAsync(require('../assets/sounds/early_morning_fog.mp3'));
-          }
-          if (!this.state.playbackStatusIsUpdating) {
-            this.state.playbackInstance.setOnPlaybackStatusUpdate(this._onPlaybackStatusUpdate.bind(this));
-            this.state.playbackStatusIsUpdating = true;
-          }
+            await this.setState({
+              isPlaying: true,
+              playbackInstance: new Audio.Sound()
+            });
+            if (this.state.playbackInstancePosition === null) {
+              await this.state.playbackInstance.loadAsync(require('../assets/sounds/early_morning_fog.mp3'));
+              this.state.playbackInstance.setOnPlaybackStatusUpdate(this._onPlaybackStatusUpdate.bind(this));
+              await this.state.playbackInstance.playAsync();
+            }
         }
       } else {
         await this.state.playbackInstance.pauseAsync();
         this.setState({
-          audioPlaying: false,
-          audioPaused: true
+          isPlaying: false
         });
       }
     } catch (error) {
@@ -169,11 +154,11 @@ export default class CalendarDayScreen extends React.Component {
   }
 
   async stopAudio() {
-    if (this.state.playbackInstance !== undefined) {
+    if (this.state.playbackInstance !== null) {
       try {
         await this.state.playbackInstance.stopAsync();
         this.setState({
-          audioPlaying: false,
+          isPlaying: false,
           // move it back to the beginning
           playbackInstancePosition: 0
         });
@@ -185,7 +170,7 @@ export default class CalendarDayScreen extends React.Component {
 
   render() {
   
-    if (this.state.audioPlaying === true) {
+    if (this.state.isPlaying === true) {
       playButtonSource = require('../img/icons/pause.png');
     } else {
       playButtonSource = require('../img/icons/play.png');
@@ -221,17 +206,20 @@ export default class CalendarDayScreen extends React.Component {
                       style={{width: 25, height: 25, marginRight: 10, marginLeft: 10}}></Image>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => {
-              if (this.state.audioPlaying === true) {
+              if (this.state.isPlaying === true) {
                 this.stopAudio();
               }
             }}>
               <Image source={require('../img/icons/stop.png')} 
                       style={{width: 25, height: 25, marginRight: 10, marginLeft: 10}}></Image>
             </TouchableOpacity>
-            <Slider style={{width: 130, height: 20, marginLeft: 10 }} 
-                    value={this._getSeekSliderPosition()} 
-                    // onValueChange={this._onSeekSliderValueChange.bind(this)} 
-                    onSlidingComplete={this._onSeekSliderSlidingComplete.bind(this)} />
+            <TouchableWithoutFeedback onPressIn={() => { this.setState({ sliderTouched: true })}}
+                                      onPressOut={() => { this.setState({ sliderTouched: false })}} >
+              <Slider style={{width: 130, height: 100, marginLeft: 10 }} 
+                      value={this._getSeekSliderPosition()} 
+                      // onValueChange={this._onSeekSliderValueChange.bind(this)} 
+                      onSlidingComplete={this._onSeekSliderSlidingComplete.bind(this)} />
+            </TouchableWithoutFeedback>
           </View>
       </View>
     );
