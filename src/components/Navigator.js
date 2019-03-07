@@ -6,7 +6,7 @@ export const Navigator = createStackNavigator({
     Home: { screen: HomeScreen },
     CalendarDay: { screen: CalendarDayScreen }
 }, {
-    initialRouteName: 'CalendarDay',
+    initialRouteName: 'Home',
     headerMode: 'none'
 });
 
