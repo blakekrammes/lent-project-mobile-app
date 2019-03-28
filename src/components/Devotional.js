@@ -13,6 +13,7 @@ export default class Devotional extends React.Component {
   async componentDidMount() {
     await Font.loadAsync({
       breeSerif: require('../assets/fonts/BreeSerif_Regular.ttf'),
+      openSans: require('../assets/fonts/OpenSans_Light.ttf')
     });
     this.setState({
       setFont: true,
@@ -23,22 +24,6 @@ export default class Devotional extends React.Component {
       return <AppLoading />;
     } else {
       return (
-        // <View style={{backgroundColor: 'white', padding: 8}}>
-        //     <TouchableHighlight
-        //             onPress={() => {
-        //             this.props.navigation.dispatch(StackActions.reset({
-        //             index: 0,
-        //             actions: [
-        //                 NavigationActions.navigate({ routeName: 'Home' })
-        //             ],
-        //             }))
-        //     }}
-        //     >
-        //         <Text style={{textDecorationLine: 'underline'}}>
-        //             {'Back to Calendar'}
-        //             {'\n'}
-        //         </Text>
-        //     </TouchableHighlight>
         <Text style={{}}>
           <Text style={styles.titleText}>
             {'Day 30 - Monday, December 31'}
@@ -216,7 +201,6 @@ export default class Devotional extends React.Component {
             {'\n'}
           </Text>
         </Text>
-        // </View>
       );
     }
   }
@@ -230,7 +214,7 @@ const styles = StyleSheet.create({
   },
 
   paragraphText: {
-    fontFamily: 'breeSerif',
+    fontFamily: 'openSans',
     fontSize: 11,
     lineHeight: 15,
   },

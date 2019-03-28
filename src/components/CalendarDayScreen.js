@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from 'react-native';
 import {StackActions, NavigationActions} from 'react-navigation';
-import {Audio} from 'expo';
+import {Audio, Font, AppLoading} from 'expo';
 import Devotional from './Devotional';
 
 export default class CalendarDayScreen extends React.Component {
@@ -41,14 +41,21 @@ export default class CalendarDayScreen extends React.Component {
         seconds: '00',
       },
       dimensions: Dimensions.get('window'),
+      fontSet: false,
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     if (this.state.playbackInstance !== null) {
       this.state.playbackInstance.unloadAsync();
     }
     this.loadAudio();
+    await Font.loadAsync({
+      breeSerif: require('../assets/fonts/BreeSerif_Regular.ttf'),
+    });
+    this.setState({
+      fontSet: true,
+    });
   }
 
   componentWillUnmount() {
@@ -241,97 +248,107 @@ export default class CalendarDayScreen extends React.Component {
     } else {
       playButtonSource = require('../img/icons/play.png');
     }
+    if (!this.state.fontSet) {
+      return <AppLoading />;
+    } else {
+      return (
+        <View style={{backgroundColor: '#000', flex: 1}}>
+          <View
+            style={{
+              flex: 9,
+              flexDirection: 'column',
+            }}>
+            <ScrollView style={{}}>
+              <Image
+                source={require('../img/photo1.png')}
+                style={{
+                  width: this.state.dimensions.width,
+                  height: this.state.dimensions.height,
+                }}
+              />
+              <View style={{backgroundColor: 'white', padding: 8}}>
+                <TouchableHighlight
+                  onPress={() => {
+                    this.props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        actions: [
+                          NavigationActions.navigate({routeName: 'Home'}),
+                        ],
+                      }),
+                    );
+                  }}>
+                  <Text
+                    style={styles.link}>
+                    {'< Back to Calendar'}
+                    {'\n'}
+                  </Text>
+                </TouchableHighlight>
+                <Devotional />
+              </View>
 
-    return (
-      <View style={{backgroundColor: '#000', flex: 1}}>
-        <View
-          style={{
-            flex: 9,
-            flexDirection: 'column',
-          }}>
-          <ScrollView style={{}}>
-            <Image
-              source={require('../img/photo1.png')}
-              style={{
-                width: this.state.dimensions.width,
-                height: this.state.dimensions.height,
-              }}
-            />
-            <View style={{backgroundColor: 'white', padding: 8}}>
-              <TouchableHighlight
-                onPress={() => {
-                  this.props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      actions: [
-                        NavigationActions.navigate({routeName: 'Home'}),
-                      ],
-                    }),
-                  );
-                }}>
-                <Text
-                  style={{textDecorationLine: 'underline', color: '#2d6bb8'}}>
-                  {'< Back to Calendar'}
-                  {'\n'}
-                </Text>
-              </TouchableHighlight>
-              <Devotional />
-            </View>
-
-            {/* <View>
+              {/* <View>
               
             </View> */}
-            {/* </TouchableHighlight> */}
-          </ScrollView>
-        </View>
+              {/* </TouchableHighlight> */}
+            </ScrollView>
+          </View>
 
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgb(68,68,68)',
-          }}>
-          {/* <Image source={require('../img/icons/music.png')} 
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgb(68,68,68)',
+            }}>
+            {/* <Image source={require('../img/icons/music.png')} 
                   style={{width: 20, height: 20, marginRight: 5, marginLeft: 5}}></Image> */}
-          {/* <Text style={{color: 'rgb(185,185,185)'}}>Music:</Text> */}
-          <TouchableOpacity
-            onPress={() => {
-              this.playAndPauseAudio();
-            }}>
-            <Image
-              source={playButtonSource}
-              style={{width: 25, height: 25, marginRight: 8, marginLeft: 8}}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              this.stopAudio();
-            }}>
-            <Image
-              source={require('../img/icons/stop.png')}
-              style={{width: 25, height: 25, marginRight: 8, marginLeft: 8}}
-            />
-          </TouchableOpacity>
-          <Text style={{color: 'rgb(187,187,187)', width: 39}}>{`${
-            this.state.currentTime.minutes
-          }:${this.state.currentTime.seconds}`}</Text>
-          <TouchableWithoutFeedback
-            onPressIn={() => {
-              this.setState({sliderTouched: true});
-            }}>
-            <Slider
-              style={{minWidth: 130, height: 300, marginLeft: 8}}
-              value={this.state.sliderValue}
-              onSlidingComplete={this._onSeekSliderSlidingComplete.bind(this)}
-            />
-          </TouchableWithoutFeedback>
-          <Text style={{color: 'rgb(187,187,187)', marginLeft: 8}}>{`${
-            this.state.totalTime.minutes
-          }:${this.state.totalTime.seconds}`}</Text>
+            {/* <Text style={{color: 'rgb(185,185,185)'}}>Music:</Text> */}
+            <TouchableOpacity
+              onPress={() => {
+                this.playAndPauseAudio();
+              }}>
+              <Image
+                source={playButtonSource}
+                style={{width: 25, height: 25, marginRight: 8, marginLeft: 8}}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.stopAudio();
+              }}>
+              <Image
+                source={require('../img/icons/stop.png')}
+                style={{width: 25, height: 25, marginRight: 8, marginLeft: 8}}
+              />
+            </TouchableOpacity>
+            <Text style={{color: 'rgb(187,187,187)', width: 39}}>{`${
+              this.state.currentTime.minutes
+            }:${this.state.currentTime.seconds}`}</Text>
+            <TouchableWithoutFeedback
+              onPressIn={() => {
+                this.setState({sliderTouched: true});
+              }}>
+              <Slider
+                style={{minWidth: 130, height: 300, marginLeft: 8}}
+                value={this.state.sliderValue}
+                onSlidingComplete={this._onSeekSliderSlidingComplete.bind(this)}
+              />
+            </TouchableWithoutFeedback>
+            <Text style={{color: 'rgb(187,187,187)', marginLeft: 8}}>{`${
+              this.state.totalTime.minutes
+            }:${this.state.totalTime.seconds}`}</Text>
+          </View>
         </View>
-      </View>
-    );
+      );
+    }
   }
 }
+const styles = StyleSheet.create({
+    link: {
+        fontFamily: 'breeSerif',
+        textDecorationLine: 'underline',
+        color: '#2d6bb8'
+    }
+});
