@@ -11,6 +11,7 @@ import {
   Slider,
   ScrollView,
   Dimensions,
+  WebView
 } from 'react-native';
 import {StackActions, NavigationActions} from 'react-navigation';
 import {Audio, Font, AppLoading} from 'expo';
@@ -260,7 +261,7 @@ export default class CalendarDayScreen extends React.Component {
             }}>
             <ScrollView style={{}}>
               <Image
-                source={require('../img/photo1.png')}
+                  source={require('../img/calendar_thumbnails/photo1.png')}
                 style={{
                   width: this.state.dimensions.width,
                   height: this.state.dimensions.height,
@@ -285,6 +286,11 @@ export default class CalendarDayScreen extends React.Component {
                   </Text>
                 </TouchableHighlight>
                 <Devotional />
+                <WebView 
+                    source={{html: '<iframe height="500" width="500" src="https://www.youtube.com/embed/zpFAejx-7LM" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'}}
+
+                    style={{marginTop: 20, height: 500, width: 500}}
+                />
               </View>
 
               {/* <View>

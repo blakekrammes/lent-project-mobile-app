@@ -53,7 +53,7 @@ export class HomeScreen extends React.Component {
               }}>
               <View style={styles.imageBorderContainer}>
                 <ImageBackground
-                  source={require('../img/photo1.png')}
+                  source={require('../img/calendar_thumbnails/photo1.png')}
                   style={styles.calendarDay}>
                   <View style={styles.daySquares}>
                     <Text
@@ -69,7 +69,7 @@ export class HomeScreen extends React.Component {
             </TouchableHighlight>
             <View style={styles.imageBorderContainer}>
               <ImageBackground
-                source={require('../img/photo2.jpg')}
+                source={require('../img/calendar_thumbnails/photo2.jpg')}
                 style={styles.calendarDay}>
                 <View style={styles.daySquares}>
                   <Text
@@ -84,7 +84,7 @@ export class HomeScreen extends React.Component {
             </View>
             <View style={styles.imageBorderContainer}>
               <ImageBackground
-                source={require('../img/photo3.jpg')}
+                source={require('../img/calendar_thumbnails/photo3.jpg')}
                 style={styles.calendarDay}>
                 <View style={styles.daySquares}>
                   <Text
@@ -108,7 +108,7 @@ export class HomeScreen extends React.Component {
             }}>
             <View style={styles.imageBorderContainer}>
               <ImageBackground
-                source={require('../img/photo4.jpg')}
+                source={require('../img/calendar_thumbnails/photo4.jpg')}
                 style={styles.calendarDay}>
                 <View style={styles.daySquares}>
                   <Text
@@ -123,7 +123,7 @@ export class HomeScreen extends React.Component {
             </View>
             <View style={styles.imageBorderContainer}>
               <ImageBackground
-                source={require('../img/photo5.jpg')}
+                source={require('../img/calendar_thumbnails/photo5.jpg')}
                 style={styles.calendarDay}>
                 <View style={styles.daySquares}>
                   <Text
@@ -138,7 +138,7 @@ export class HomeScreen extends React.Component {
             </View>
             <View style={styles.imageBorderContainer}>
               <ImageBackground
-                source={require('../img/photo6.png')}
+                source={require('../img/calendar_thumbnails/photo6.png')}
                 style={styles.calendarDay}>
                 <View style={styles.daySquares}>
                   <Text
@@ -162,7 +162,7 @@ export class HomeScreen extends React.Component {
             }}>
             <View style={styles.imageBorderContainer}>
               <ImageBackground
-                source={require('../img/photo7.png')}
+                source={require('../img/calendar_thumbnails/photo7.png')}
                 style={styles.calendarDay}>
                 <View style={styles.daySquares}>
                   <Text
@@ -177,7 +177,7 @@ export class HomeScreen extends React.Component {
             </View>
             <View style={styles.imageBorderContainer}>
               <ImageBackground
-                source={require('../img/photo8.png')}
+                source={require('../img/calendar_thumbnails/photo8.png')}
                 style={styles.calendarDay}>
                 <View style={styles.daySquares}>
                   <Text
@@ -202,8 +202,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: 'breeSerif',
     fontWeight: 'bold',
+    textDecorationLine: 'underline',
     textAlign: 'center',
-    marginTop: 80,
+    marginTop: 60,
     fontSize: 30,
   },
   container: {
